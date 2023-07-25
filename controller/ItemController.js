@@ -12,16 +12,19 @@ export class ItemController {
         $('#itemTbl').on('click', 'tr', this.clickOnTableItemLoadFields.bind(this));
         $("#itemTbl").on("click", ".item_delete", this.deleteItem.bind(this));
         $('.itemfields').on('keyup', this.validateItemDetails.bind(this));
+        $('#item_search_field').on('keyup', this.search.bind(this));
         this.allFiledsValidated = false;
         this.itemCodeOriginalBorderStyle = $('.itemfields').css('border');
 
     }
-
-
-    async loadItemsTbl() {
-        this.items = await this.itemService.getAllItems();
+    async search(){
+        const data = $('#item_search_field').val();
+        const matchedData = this.items.filter(item => item.code.includes(data) || item.des.includes(data));
+        this.setUpTable(matchedData);
+    }
+    setUpTable(items){
         let tr = ``;
-        this.items.map(item => {
+        items.map(item => {
             tr += `
             <tr >
                 <td>${item.code}</td>
@@ -35,6 +38,10 @@ export class ItemController {
         `;
         });
         $('#itemTbl').html(tr);
+    }
+    async loadItemsTbl() {
+        this.items = await this.itemService.getAllItems();
+        this.setUpTable(this.items);
     }
 
     //add item-------------------------------------------------------------

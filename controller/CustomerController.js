@@ -27,8 +27,11 @@ export class CustomerController {
         const matchedCustomers = this.customers.filter(
             c => c.id.includes(searchField) || c.name.includes(searchField)
         );
+        this.setUpTable(matchedCustomers);
+    }
+    setUpTable(customers){
         let tr = ``;
-        matchedCustomers.map(customer => {
+        customers.map(customer => {
             tr += `
             <tr>
                 <th scope="row">${customer.id}</th>
@@ -42,24 +45,9 @@ export class CustomerController {
         });
         $('#customerTbl').html(tr);
     }
-
     async loadCustomersTbl() {
         this.customers = await this.customerService.getAllCustomers();
-
-        let tr = ``;
-        this.customers.map(customer => {
-            tr += `
-            <tr>
-                <th scope="row">${customer.id}</th>
-                <td>${customer.name}</td>
-                <td>${customer.address}</td>
-                <td>
-                    <button class="customer_delete btn btn-danger">Delete</button>
-                </td>
-            </tr>
-        `;
-        });
-        $('#customerTbl').html(tr);
+        this.setUpTable(this.customers);
     }
 
     addCustomer(e) {
