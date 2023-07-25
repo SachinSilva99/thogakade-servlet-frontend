@@ -3,11 +3,11 @@ import {Customer} from "../model/Customer.js";
 import {CustomerService} from "../db/CustomerService.js";
 
 export class CustomerController {
-     constructor() {
+    constructor() {
         this.customerService = new CustomerService();
         $('#add_customer').click(this.addCustomer.bind(this));
         $('#update_customer').click(this.updateCustomer.bind(this));
-        this.customers =  this.customerService.getAllStudents();
+        this.customers = this.customerService.getAllStudents();
         $('.nav-link').click(this.loadCustomersTbl.bind(this));
         $('#customerTbl').on('click', 'tr', this.clickTableLoadFields.bind(this));
         $("#customerTbl").on("click", ".customer_delete", this.deleteCustomer.bind(this));
@@ -74,19 +74,26 @@ export class CustomerController {
             this.customerAddressElement.val()
         );
 
-        let promise = this.customerService.customerExists();
-        if (customerExists) {
-            alert("Customer Already exists");
-            return;
-        }
-        this.customers.push(customer);
-        this.customerIdElement.val('');
-        this.customerNameElement.val('');
-        this.customerAddressElement.val('');
-        $('#msg').text('Customer Added Successfully');
-        $('#alertInfo').text('Success');
-        $('#alertModal').modal('show');
-        this.loadCustomersTbl();
+        this.customerService.customerExists(customer.id)
+            .then((existingCustomer) => {
+                if (existingCustomer) {
+                    alert("Customer already exists");
+                } else {
+                    // this.customers.push(customer);
+                    console.log(customer.toJSON());
+                    this.customerService.save(customer.toJSON()).then(r => this.loadCustomersTbl());
+                    this.customerIdElement.val('');
+                    this.customerNameElement.val('');
+                    this.customerAddressElement.val('');
+                    $('#msg').text('Customer Added Successfully');
+                    $('#alertInfo').text('Success');
+                    $('#alertModal').modal('show');
+
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
     }
 
     updateCustomer(e) {

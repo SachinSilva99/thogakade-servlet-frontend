@@ -46,8 +46,27 @@ export class API {
 
     }
 
-    async existsByPk(customer, pk) {
+    async existsByPk(type, pkName, pk) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
 
-
+            xhr.open('GET', this.api + type + '?' + pkName + '=' + pk);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = () => {
+                if (xhr.status === 200) {
+                    const responseData = JSON.parse(xhr.responseText);
+                    console.log(type, ' data retrieved successfully:', responseData);
+                    resolve(responseData);
+                } else {
+                    console.error('Failed to retrieve' + type + 'data Error:', xhr.statusText);
+                    reject(new Error('Failed to retrieve ' + type + ' data.'));
+                }
+            };
+            xhr.onerror = () => {
+                console.error('Failed to make the request.');
+                reject(new Error('Failed to make the request.'));
+            };
+            xhr.send();
+        });
     }
 }

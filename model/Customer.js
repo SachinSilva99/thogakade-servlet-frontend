@@ -30,7 +30,7 @@ export class Customer{
     }
     toJSON() {
         return {
-            customerId: this._id,
+            id: this._id,
             name: this._name,
             address: this._address
         };

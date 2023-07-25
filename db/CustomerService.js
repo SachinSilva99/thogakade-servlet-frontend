@@ -18,17 +18,14 @@ export class CustomerService {
     }
 
     async customerExists(pk) {
+        try {
+            return await this.api.existsByPk('customer', 'id', pk);
+        } catch (error) {
+            console.error('Failed to check if customer exists. Error:', error);
+        }
+    }
 
-
-            try {
-                await this.api.existsByPk('customer', pk);
-                return true; // Return true if the save operation is successful
-            } catch (error) {
-                console.error('Failed to save customer. Error:', error);
-                return false; // Return false if there is an error during the save operation
-            }
-
-
-
+    async save(customer) {
+        await this.api.save('customer', JSON.stringify(customer)).then(r => r);
     }
 }
