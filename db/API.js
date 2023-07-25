@@ -49,7 +49,6 @@ export class API {
     async existsByPk(type, pkName, pk) {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-
             xhr.open('GET', this.api + type + '?' + pkName + '=' + pk);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.onreadystatechange = () => {

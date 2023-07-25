@@ -1,4 +1,4 @@
-export class Item{
+export class Item {
     constructor(code, des, price, qty) {
         this._code = code;
         this._des = des;
@@ -36,5 +36,14 @@ export class Item{
 
     set qty(value) {
         this._qty = value;
+    }
+
+    toJSON() {
+        return {
+            code: this._code,
+            description: this._des,
+            unitPrice: this._price,
+            qtyOnHand: this._qty
+        };
     }
 }

@@ -6,7 +6,7 @@ export class CustomerService {
         this.api = new API();
     }
 
-    async getAllStudents() {
+    async getAllCustomers() {
         try {
             const data = await this.api.getAll('customer');
             console.log('Data retrieved successfully:', data);

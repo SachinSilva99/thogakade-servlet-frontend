@@ -1,25 +1,25 @@
-import {items} from "../db/DB.js";
 import {Item} from "../model/Item.js";
+import ItemService from "../db/ItemService.js";
+
 
 export class ItemController {
     constructor() {
-        this.items = items;
-        $('.nav-link').click(this.loadingItemsIfAvailable.bind(this));
+        this.itemService = new ItemService();
+        this.items = this.itemService.getAllItems();
+        $('.nav-link').click(this.loadItemsTbl.bind(this));
         $('#addItem').click(this.addItem.bind(this));
         $('#itemUpdate').click(this.updateItem.bind(this));
         $('#itemTbl').on('click', 'tr', this.clickOnTableItemLoadFields.bind(this));
         $("#itemTbl").on("click", ".item_delete", this.deleteItem.bind(this));
         $('.itemfields').on('keyup', this.validateItemDetails.bind(this));
         this.allFiledsValidated = false;
+        this.itemCodeOriginalBorderStyle = $('.itemfields').css('border');
 
     }
 
-    loadingItemsIfAvailable() {
-        this.items = items;
-        this.loadItemsTbl()
-    }
 
-    loadItemsTbl() {
+    async loadItemsTbl() {
+        this.items = await this.itemService.getAllItems();
         let tr = ``;
         this.items.map(item => {
             tr += `
@@ -46,13 +46,6 @@ export class ItemController {
         const price = $('#item_price').val();
         const qty = $('#item_qty').val();
         const item = new Item(itemCode, des, price, qty);
-        const itemExists = this.items.some((i) => i.code === itemCode);
-        if (itemExists) {
-            $('#msg').text(itemCode, ' Item Already exists');
-            $('#alertInfo').text('Success');
-            $('#alertModal').modal('show');
-            return;
-        }
         if (!this.allFiledsValidated) {
             $('#msg').text('Check the fields again');
             $('#alertInfo').text('Success');
@@ -61,15 +54,25 @@ export class ItemController {
         }
 
 
-        this.items.push(item);
-        $('#item_code').val('');
-        $('#item_description').val('');
-        $('#item_price').val('');
-        $('#item_qty').val('');
-        $('#msg').text(itemCode, ' Added Successfully!');
-        $('#alertInfo').text('Success');
-        $('#alertModal').modal('show');
-        this.loadItemsTbl();
+        // this.items.push(item);
+        this.itemService.itemExists(itemCode).then(existingItem => {
+            if (existingItem) {
+                console.log(existingItem);
+                $('#msg').text(itemCode + ' Item Already exists');
+                $('#alertInfo').text('Error');
+                $('#alertModal').modal('show');
+            } else {
+                console.log("works");
+                this.itemService.save(item.toJSON()).then(r => this.loadItemsTbl());
+                $('#item_code').val('');
+                $('#item_description').val('');
+                $('#item_price').val('');
+                $('#item_qty').val('');
+                $('#msg').text(itemCode + ' Added Successfully!');
+                $('#alertInfo').text('Success');
+                $('#alertModal').modal('show');
+            }
+        })
     }
 
     //update item-------------------------------------------------------------
@@ -102,7 +105,7 @@ export class ItemController {
     //click on item table row and load to the fields----------------------------------
     clickOnTableItemLoadFields(e) {
         const itemCode = $(e.target).closest('tr').find('td').eq(0).text();
-
+        this.validateItemDetails();
         for (const item of this.items) {
             if (itemCode === item.code) {
                 $('#item_code').val(item.code);
@@ -133,8 +136,7 @@ export class ItemController {
         const desReg = /^[A-Za-z0-9\s'-]+$/;
         const priceReg = /^\d+(\.\d{1,2})?$/;
         const qtyReg = /^\d+$/;
-
-        $('.itemfields').css('border', 'none');
+        $('.itemfields').css('border', this.itemCodeOriginalBorderStyle);
         if (!itemCodeRegex.test(itemCode)) {
             $('#item_code').css('border', '3px solid crimson');
             this.allFiledsValidated = false;

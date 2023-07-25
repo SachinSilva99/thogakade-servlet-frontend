@@ -5,9 +5,10 @@ import {CustomerService} from "../db/CustomerService.js";
 export class CustomerController {
     constructor() {
         this.customerService = new CustomerService();
+
         $('#add_customer').click(this.addCustomer.bind(this));
         $('#update_customer').click(this.updateCustomer.bind(this));
-        this.customers = this.customerService.getAllStudents();
+        this.customers = this.customerService.getAllCustomers();
         $('.nav-link').click(this.loadCustomersTbl.bind(this));
         $('#customerTbl').on('click', 'tr', this.clickTableLoadFields.bind(this));
         $("#customerTbl").on("click", ".customer_delete", this.deleteCustomer.bind(this));
@@ -17,6 +18,7 @@ export class CustomerController {
         this.customerNameElement = $('#customer_name');
         this.customerAddressElement = $('#customer_address');
         $('#customerSearchField').on('keyup', this.searchCustomers.bind(this));
+        this.originalFieldsBorder = $('.fields').css('border');
 
     }
 
@@ -42,7 +44,7 @@ export class CustomerController {
     }
 
     async loadCustomersTbl() {
-        this.customers = await this.customerService.getAllStudents();
+        this.customers = await this.customerService.getAllCustomers();
 
         let tr = ``;
         this.customers.map(customer => {
@@ -77,7 +79,9 @@ export class CustomerController {
         this.customerService.customerExists(customer.id)
             .then((existingCustomer) => {
                 if (existingCustomer) {
-                    alert("Customer already exists");
+                    $('#msg').text(customer.id + ' Customer Already exists');
+                    $('#alertInfo').text('Error');
+                    $('#alertModal').modal('show');
                 } else {
                     console.log(customer.toJSON());
                     this.customerService.save(customer.toJSON()).then(r => this.loadCustomersTbl());
@@ -137,7 +141,7 @@ export class CustomerController {
         const cIdReg = /^C00\d+$/;
         const cNameReg = /^[A-Za-z\s'-]+$/;
         const cAddressReg = /^[0-9A-Za-z\s',.-]+$/;
-        $('.fields').css('border', 'none');
+        $('.fields').css('border', this.originalFieldsBorder);
         if (!cIdReg.test(customerId)) {
             this.customerIdElement.css('border', '3px solid crimson');
             this.allFiledsValidated = false;
