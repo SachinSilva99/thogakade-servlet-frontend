@@ -30,7 +30,11 @@ export default class ItemService{
     }
 
     async delete(code) {
-        await this.api.delete('item', 'code', code);
+        await this.api.delete('item', 'code', code)
+            .then(r=>r)
+            .catch(e=>{
+                throw new Error("in Use");
+            });
     }
 
     async update(item) {

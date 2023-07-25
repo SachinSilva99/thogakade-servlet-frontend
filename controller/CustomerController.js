@@ -113,6 +113,7 @@ export class CustomerController {
 
     clickTableLoadFields(e) {
         const customerId = $(e.target).closest('tr').find('th').eq(0).text();
+        this.validateCustomerDetails();
         for (const customer of this.customers) {
             if (customerId === customer.id) {
                 this.customerIdElement.val(customer.id);
@@ -129,7 +130,6 @@ export class CustomerController {
             $('#msg').text('Customer Deleted Successfully');
             $('#alertInfo').text('Success');
             $('#alertModal').modal('show');
-            console.log(this.customers);
             this.loadCustomersTbl();
         });
     }

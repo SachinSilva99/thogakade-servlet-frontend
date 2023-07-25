@@ -82,24 +82,22 @@ export class ItemController {
         const des = $('#item_description').val();
         const price = $('#item_price').val();
         const qty = $('#item_qty').val();
-        let itemAvailable = this.items.some(item => item.code === itemCode);
-        if (!itemAvailable) {
-            $('#msg').text("Item doesn't available you should add instead");
-            $('#alertInfo').text('Success');
-            $('#alertModal').modal('show');
-            return;
-        }
-        this.items.forEach((item) => {
-            if (itemCode === item.code) {
-                item.des = des;
-                item.price = price;
-                item.qty = qty;
-                $('#msg').text(itemCode, ' Added Successfully!');
-                $('#alertInfo').text('Success');
-                $('#alertModal').modal('show');
-            }
-        });
-        this.loadItemsTbl();
+        const item = new Item(itemCode, des, price, qty);
+
+        this.itemService.itemExists(itemCode)
+            .then(existingItem => {
+                if (existingItem) {
+                    this.itemService.update(item.toJSON());
+                    this.loadItemsTbl();
+                    $('#msg').text(itemCode + ' updated Successfully!');
+                    $('#alertInfo').text('Success');
+                    $('#alertModal').modal('show');
+                } else {
+                    $('#msg').text("Item not available you should add");
+                    $('#alertInfo').text('Error : ');
+                    $('#alertModal').modal('show');
+                }
+            })
     }
 
     //click on item table row and load to the fields----------------------------------
@@ -120,11 +118,17 @@ export class ItemController {
     //delete item
     deleteItem(e) {
         const itemCode = $(e.target).closest("tr").find("td").eq(0).text();
-        const index = this.items.findIndex((item) => item.code === itemCode);
-        if (index !== -1) {
-            this.items.splice(index, 1);
-        }
-        this.loadItemsTbl();
+        this.itemService.delete(itemCode).then(() => {
+            this.loadItemsTbl();
+            $('#msg').text('Item Deleted Successfully');
+            $('#alertInfo').text('Error : ');
+            $('#alertModal').modal('show');
+        }).catch(er => {
+            console.log("error");
+            $('#msg').text('Item in use');
+            $('#alertInfo').text('Success');
+            $('#alertModal').modal('show');
+        });
     }
 
     validateItemDetails() {

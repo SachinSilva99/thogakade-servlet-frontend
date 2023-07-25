@@ -78,7 +78,6 @@ export class API {
                     console.log(type + ' deleted successfully.');
                     resolve(true);
                 } else {
-                    resolve(false);
                     reject(new Error('Failed to delete ' + type));
                     console.error('Failed to delete ' + type + ' :', xhr.statusText);
                 }
