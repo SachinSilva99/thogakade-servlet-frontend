@@ -79,7 +79,6 @@ export class CustomerController {
                 if (existingCustomer) {
                     alert("Customer already exists");
                 } else {
-                    // this.customers.push(customer);
                     console.log(customer.toJSON());
                     this.customerService.save(customer.toJSON()).then(r => this.loadCustomersTbl());
                     this.customerIdElement.val('');
@@ -101,24 +100,18 @@ export class CustomerController {
         const customerId = this.customerIdElement.val();
         const customerName = this.customerNameElement.val();
         const customerAddress = this.customerAddressElement.val();
-
-        this.customers.forEach((customer) => {
-            if (customerId === customer.id) {
-                customer.name = customerName;
-                customer.address = customerAddress;
-                alert('customer updated successfully');
-            }
-        });
-        this.loadCustomersTbl();
+        const customer = new Customer(customerId, customerName, customerAddress);
+        this.customerService.update(customer)
+            .then(r => this.loadCustomersTbl())
+            .catch(customer => alert("Failed to update"));
     }
 
 
     clickTableLoadFields(e) {
         const customerId = $(e.target).closest('tr').find('th').eq(0).text();
-
         for (const customer of this.customers) {
             if (customerId === customer.id) {
-                this.customerIdElement.val(customer.customerId);
+                this.customerIdElement.val(customer.id);
                 this.customerNameElement.val(customer.name);
                 this.customerAddressElement.val(customer.address);
                 return;
@@ -128,15 +121,13 @@ export class CustomerController {
 
     deleteCustomer(e) {
         const customerId = $(e.target).closest("tr").find("th").eq(0).text();
-        const index = this.customers.findIndex((customer) => customer.id === customerId);
-        if (index !== -1) {
-            this.customers.splice(index, 1);
-        }
-        $('#msg').text('Customer Deleted Successfully');
-        $('#alertInfo').text('Success');
-        $('#alertModal').modal('show');
-        console.log(this.customers);
-        this.loadCustomersTbl();
+        this.customerService.delete(customerId).then(() => {
+            $('#msg').text('Customer Deleted Successfully');
+            $('#alertInfo').text('Success');
+            $('#alertModal').modal('show');
+            console.log(this.customers);
+            this.loadCustomersTbl();
+        });
     }
 
     validateCustomerDetails() {

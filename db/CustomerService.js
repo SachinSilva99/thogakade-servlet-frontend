@@ -28,4 +28,12 @@ export class CustomerService {
     async save(customer) {
         await this.api.save('customer', JSON.stringify(customer)).then(r => r);
     }
+
+    async delete(customerId) {
+        await this.api.delete('customer', 'id', customerId);
+    }
+
+    async update(customer) {
+        await this.api.update('customer', JSON.stringify(customer));
+    }
 }

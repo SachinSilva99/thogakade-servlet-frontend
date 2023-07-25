@@ -26,7 +26,7 @@ export class API {
         });
     }
 
-    async save(type, customer) {
+    async save(type, data) {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', this.api + type);
@@ -41,7 +41,7 @@ export class API {
             xhr.onerror = () => {
                 console.error('Failed to make the request.');
             };
-            xhr.send(customer);
+            xhr.send(data);
         });
 
     }
@@ -67,6 +67,51 @@ export class API {
                 reject(new Error('Failed to make the request.'));
             };
             xhr.send();
+        });
+    }
+
+    async delete(type, pkName, pk) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('DELETE', this.api + type + '?' + pkName + '=' + pk);
+            xhr.onreadystatechange = function () {
+                if (xhr.status === 200) {
+                    console.log(type + ' deleted successfully.');
+                    resolve(true);
+                } else {
+                    resolve(false);
+                    reject(new Error('Failed to delete ' + type));
+                    console.error('Failed to delete ' + type + ' :', xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error('Failed to make the request.');
+            };
+            xhr.send();
+        });
+    }
+
+    async update(type, data) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+
+            xhr.open('PUT', this.api + type);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = () => {
+                if (xhr.status === 200) {
+                    const responseData = JSON.parse(xhr.responseText);
+                    console.log(type, ' data updated successfully:', responseData);
+                    resolve(responseData);
+                } else {
+                    console.error('Failed to update' + type + 'data Error:', xhr.statusText);
+                    reject(new Error('Failed to update ' + type + ' data'));
+                }
+            };
+            xhr.onerror = () => {
+                console.error('Failed to make the request.');
+                reject(new Error('Failed to make the request.'));
+            };
+            xhr.send(data);
         });
     }
 }
