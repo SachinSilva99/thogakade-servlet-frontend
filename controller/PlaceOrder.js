@@ -1,23 +1,28 @@
-import {customers, items, orderDetails, orders} from "../db/DB.js";
-
 import {OrderItemTm} from "../model/tm/OrderItemTm.js";
-import {OrderDetail} from "../model/OrderDetail.js";
-import {Order} from "../model/Order.js";
 import {Customer} from "../model/Customer.js";
+import OrderService from "../db/OrderService.js";
+import {CustomerService} from "../db/CustomerService.js";
+import ItemService from "../db/ItemService.js";
+import CartDetail from "../model/CartDetail.js";
 
 export class PlaceOrder {
+
     constructor() {
-        this.orders = orders;
-        this.orderDetails = orderDetails;
-        this.customers = customers;
-        this.items = items;
+        this.itemService = new ItemService();
+
+        this.customerService = new CustomerService();
+        this.orderService = new OrderService();
+        this.orders = this.orderService.getAllItems();
+        console.log(this.orders)
+        this.customers = this.customerService.getAllCustomers();
+        this.items = this.itemService.getAllItems();
         this.orderItems = [];
         this.allFiledsValidated = false;
         this.validateCustomerDetails();
+        this.getLastOrderId();
 
         $('.nav-link').click(this.loadCustomerItems.bind(this));
 
-        $('#orderIdLabel').text(this.getLastOrderId.bind(this));
         $('select#customerIds').change(this.customerSelectOnChange.bind(this));
         $('select#itemCodes').change(this.itemSelectOnChange.bind(this));
         $('#place-order-tbl').on('click', 'button', this.optionButtonClick.bind(this));
@@ -27,16 +32,15 @@ export class PlaceOrder {
         $('#item_qty_need_p').on('keyup', this.validateQtyNeed.bind(this));
     }
 
-    loadCustomerItems() {
-
-        this.customers = customers;
+    async loadCustomerItems() {
+        await this.getLastOrderId();
+        this.customers = await this.customerService.getAllCustomers();
         $('#customerIds').empty();
         $('#customerIds').append(`<option value="Select Customer">Select Customer</option>`);
         this.customers.map(c => {
             $('#customerIds').append(`<option value=${c.id}>${c.id}</option>`);
         });
-
-        this.items = items;
+        this.items = await this.itemService.getAllItems();
         $('#itemCodes').empty();
         $('#itemCodes').append(`<option value="Select Item">Select Item</option>`);
         this.items.map(i => {
@@ -44,10 +48,13 @@ export class PlaceOrder {
         });
     }
 
-    getLastOrderId() {
-        if (orders.length === 0) return 'D001';
-        let orderId = orders.slice(-1)[0].id;
-        return this.generateOrderId(orderId);
+    async getLastOrderId() {
+        if (this.orders.length === 0) return 'D001';
+        const lastOrderId = await this.orderService.generateOrderId();
+        console.log(lastOrderId);
+        const generatedOrderId = this.generateOrderId(lastOrderId);
+        $('#orderIdLabel').text(generatedOrderId);
+        return generatedOrderId;
     }
 
     customerSelectOnChange(e) {
@@ -126,7 +133,7 @@ export class PlaceOrder {
         const itemPrice = $('#item_price_p').val();
         const itemQtyNeeded = $('#item_qty_need_p').val();
         const qty = $('#item_qty_p').val();
-        if(itemQtyNeeded === '' || itemQtyNeeded < 0){
+        if (itemQtyNeeded === '' || itemQtyNeeded < 0) {
             $('#msg').text("QTY needed cannot be empty or negative");
             $('#alertInfo').text('Error : ');
             $('#alertModal').modal('show');
@@ -201,39 +208,41 @@ export class PlaceOrder {
             return;
         }
         let discount = $('#discount').val();
-        if(!/^([0-9]|[1-9][0-9]|100)$/.test(discount)){
+        if (!/^([0-9]|[1-9][0-9]|100)$/.test(discount)) {
             $('#msg').text("Discount is invalid");
             $('#alertInfo').text('Error:');
             $('#alertModal').modal('show');
             return;
         }
-        if(!this.allFiledsValidated){
+        if (!this.allFiledsValidated) {
             $('#msg').text("Fields are invalid");
             $('#alertInfo').text('Error:');
             $('#alertModal').modal('show');
             return;
         }
-        const discountAmount = (discount/100) * total;
+        const discountAmount = (discount / 100) * total;
         total -= discountAmount;
-        const orderDetails = this.orderItems.map(ot => new OrderDetail(orderId, ot.code, ot.des, ot.qty_need, ot.price));
-        orderDetails.forEach(od => this.orderDetails.push(od));
-        const customerId = $('#customer_id_p').val();
-        let customer = this.customers.find(cust => cust.id === customerId);
-        if (customer === undefined) {
-            customer = new Customer(
-                $('#customer_id_p').val(),
-                $('#customer_name_p').val(),
-                $('#customer_address_p').val());
-            this.customers.push(customer);
-        }
-        this.orders.push(new Order(orderId, new Date(), customer));
 
-        this.orderItems.map(od => {
-            const item = items.find(item => item.code === od.code);
-            if (item) {
-                item.qty -= od.qty_need;
-            }
-        });
+        const customerId = $('#customer_id_p').val()
+        const customerName = $('#customer_name_p').val()
+        const customerAddress = $('#customer_address_p').val();
+        const customer = new Customer(customerId, customerName, customerAddress).toJSON();
+        const cartDetails = this.orderItems
+            .map(ot =>
+                new CartDetail(orderId,
+                    ot.code,
+                    ot.qty_need,
+                    ot.des,
+                    ot.price,
+                    this.getQtyByCode(ot.code),
+                    this.items.find(item => item.code === ot.code))
+            );
+        const placeOrder = {
+            customerDto: customer,
+            orderId: orderId,
+            cartDetailDTOS: cartDetails
+        };
+        this.orderService.placeOrder(placeOrder);
         this.orderItems = [];
         this.loadOrderTbl();
         const balance = cash - total;
@@ -245,6 +254,11 @@ export class PlaceOrder {
         $('#orderIdLabel').text(nextOrderId);
         this.loadCustomerItems();
         this.clearFields();
+    }
+
+    getQtyByCode(code) {
+        const foundItem = this.items.find(item => item.code === code);
+        return foundItem ? foundItem.qty : null;
     }
 
     clearFields() {
@@ -262,11 +276,6 @@ export class PlaceOrder {
         $('#cash').val('');
     }
 
-    generateOrderId(currentOrderId) {
-        const currentNumber = parseInt(currentOrderId.slice(1));
-        const nextNumber = currentNumber + 1;
-        return `D${nextNumber.toString().padStart(4, '0')}`;
-    }
 
     validateQtyNeed() {
         const qtyNeeded = $('#item_qty_need_p').val();
@@ -297,6 +306,15 @@ export class PlaceOrder {
         } else {
             this.allFiledsValidated = true;
         }
+    }
+
+    generateOrderId(currentOrderId) {
+        if (!currentOrderId) {
+            return 'D001';
+        }
+        const currentNumber = parseInt(currentOrderId.slice(1), 10);
+        const nextNumber = currentNumber + 1;
+        return 'D' + String(nextNumber).padStart(3, '0');
     }
 }
 

@@ -17,12 +17,14 @@ export class ItemController {
         this.itemCodeOriginalBorderStyle = $('.itemfields').css('border');
 
     }
-    async search(){
+
+    async search() {
         const data = $('#item_search_field').val();
         const matchedData = this.items.filter(item => item.code.includes(data) || item.des.includes(data));
         this.setUpTable(matchedData);
     }
-    setUpTable(items){
+
+    setUpTable(items) {
         let tr = ``;
         items.map(item => {
             tr += `
@@ -39,6 +41,7 @@ export class ItemController {
         });
         $('#itemTbl').html(tr);
     }
+
     async loadItemsTbl() {
         this.items = await this.itemService.getAllItems();
         this.setUpTable(this.items);
@@ -90,21 +93,23 @@ export class ItemController {
         const price = $('#item_price').val();
         const qty = $('#item_qty').val();
         const item = new Item(itemCode, des, price, qty);
-
-        this.itemService.itemExists(itemCode)
-            .then(existingItem => {
-                if (existingItem) {
-                    this.itemService.update(item.toJSON());
-                    this.loadItemsTbl();
-                    $('#msg').text(itemCode + ' updated Successfully!');
-                    $('#alertInfo').text('Success');
-                    $('#alertModal').modal('show');
-                } else {
-                    $('#msg').text("Item not available you should add");
-                    $('#alertInfo').text('Error : ');
-                    $('#alertModal').modal('show');
-                }
-            })
+        this.validateItemDetails();
+        if (this.allFiledsValidated) {
+            this.itemService.itemExists(itemCode)
+                .then(existingItem => {
+                    if (existingItem) {
+                        this.itemService.update(item.toJSON());
+                        this.loadItemsTbl();
+                        $('#msg').text(itemCode + ' updated Successfully!');
+                        $('#alertInfo').text('Success');
+                        $('#alertModal').modal('show');
+                    } else {
+                        $('#msg').text("Item not available you should add");
+                        $('#alertInfo').text('Error : ');
+                        $('#alertModal').modal('show');
+                    }
+                });
+        }
     }
 
     //click on item table row and load to the fields----------------------------------

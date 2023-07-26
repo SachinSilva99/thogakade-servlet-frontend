@@ -35,7 +35,7 @@ export class API {
                 if (xhr.status === 201) {
                     resolve(type + ' saved successfully:', xhr.responseText);
                 } else {
-                    reject(new Error('Failed to save student data'));
+                    reject(new Error('Failed to save  data'));
                 }
             };
             xhr.onerror = () => {
@@ -110,6 +110,33 @@ export class API {
                 reject(new Error('Failed to make the request.'));
             };
             xhr.send(data);
+        });
+    }
+
+    async get(type, pkName, pk) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            if (pk) {
+                xhr.open('GET', this.api + type + '?' + pkName + '=' + pk);
+            } else {
+                xhr.open('GET', this.api + type);
+            }
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = () => {
+                if (xhr.status === 200) {
+                    const responseData = JSON.parse(xhr.responseText);
+                    console.log(type, ' item received successfully:', xhr.responseText);
+                    resolve(responseData);
+                } else {
+                    console.error('Failed to receive' + type + 'data Error:', xhr.statusText);
+                    reject(new Error('Failed to receive ' + type + ' data'));
+                }
+            };
+            xhr.onerror = () => {
+                console.error('Failed to make the request.');
+                reject(new Error('Failed to make the request.'));
+            };
+            xhr.send(pkName);
         });
     }
 }

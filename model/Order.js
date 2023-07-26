@@ -1,5 +1,5 @@
 export class Order {
-    constructor(id,date,customer) {
+    constructor(id, date, customer) {
         this._id = id;
         this._date = date;
         this._customer = customer;
@@ -27,5 +27,13 @@ export class Order {
 
     set customer(value) {
         this._customer = value;
+    }
+
+    toJson() {
+        return {
+            orderId: this._id,
+            date: this._date,
+            customerId: this._customer.id
+        }
     }
 }

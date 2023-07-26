@@ -1,11 +1,9 @@
-//customers page start---------------------------------------------------------------
 import {Customer} from "../model/Customer.js";
 import {CustomerService} from "../db/CustomerService.js";
 
 export class CustomerController {
     constructor() {
         this.customerService = new CustomerService();
-
         $('#add_customer').click(this.addCustomer.bind(this));
         $('#update_customer').click(this.updateCustomer.bind(this));
         this.customers = this.customerService.getAllCustomers();
@@ -79,7 +77,6 @@ export class CustomerController {
                     $('#msg').text('Customer Added Successfully');
                     $('#alertInfo').text('Success');
                     $('#alertModal').modal('show');
-
                 }
             })
             .catch((error) => {
@@ -93,9 +90,12 @@ export class CustomerController {
         const customerName = this.customerNameElement.val();
         const customerAddress = this.customerAddressElement.val();
         const customer = new Customer(customerId, customerName, customerAddress);
-        this.customerService.update(customer)
-            .then(r => this.loadCustomersTbl())
-            .catch(customer => alert("Failed to update"));
+        this.validateCustomerDetails();
+        if (this.allFiledsValidated) {
+            this.customerService.update(customer)
+                .then(r => this.loadCustomersTbl())
+                .catch(customer => alert("Failed to update"));
+        }
     }
 
 
