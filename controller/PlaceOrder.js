@@ -247,14 +247,15 @@ export class PlaceOrder {
         this.orderItems = [];
         this.loadOrderTbl();
         const balance = cash - total;
-        $('#msg').text(`Order Placed Successfully Customer Balance is  ${balance}`);
-        $('#alertInfo').text('Success');
-        $('#alertModal').modal('show');
         const currentOrderId = $('#orderIdLabel').text();
         let nextOrderId = this.generateOrderId(currentOrderId);
+        console.log(nextOrderId);
         $('#orderIdLabel').text(nextOrderId);
         this.loadCustomerItems();
         this.clearFields();
+        $('#msg').text(`Order Placed Successfully Customer Balance is  ${balance}`);
+        $('#alertInfo').text('Success');
+        $('#alertModal').modal('show');
     }
 
     getQtyByCode(code) {

@@ -9,7 +9,6 @@ export class OrderController {
         this.orderDetails = this.orderService.getAllOrderDetails();
         $('select#orderId').change(this.loadOrders.bind(this));
         $('.nav-link').click(this.loadOrdersIfAvailable.bind(this));
-
     }
 
     async loadOrders(e) {
