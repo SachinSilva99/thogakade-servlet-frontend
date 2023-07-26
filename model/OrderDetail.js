@@ -1,4 +1,4 @@
-export class OrderDetail{
+export class OrderDetail {
     constructor(orderId, itemCode, itemDes, qty, itemPrice) {
         this._orderId = orderId;
         this._itemCode = itemCode;
@@ -53,5 +53,15 @@ export class OrderDetail{
 
     set order(value) {
         this._order = value;
+    }
+
+    toJson() {
+        return {
+            orderId: this._orderId,
+            itemCode: this._itemCode,
+            itemDes: this._itemDes,
+            qty: this._qty,
+            itemPrice: this._itemPrice
+        }
     }
 }

@@ -3,10 +3,14 @@ export class API {
         this.api = 'http://localhost:8001/thogakade/';
     }
 
-    getAll(type) {
+    getAll(type, include) {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', this.api + type);
+            if (include) {
+                xhr.open('GET', this.api + type + '?' + include);
+            } else {
+                xhr.open('GET', this.api + type);
+            }
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4) {

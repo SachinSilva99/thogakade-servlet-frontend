@@ -13,7 +13,7 @@ export class PlaceOrder {
         this.customerService = new CustomerService();
         this.orderService = new OrderService();
         this.orders = this.orderService.getAllItems();
-        console.log(this.orders)
+
         this.customers = this.customerService.getAllCustomers();
         this.items = this.itemService.getAllItems();
         this.orderItems = [];
@@ -22,7 +22,7 @@ export class PlaceOrder {
         this.getLastOrderId();
 
         $('.nav-link').click(this.loadCustomerItems.bind(this));
-
+        console.log('orders' + this.orders)
         $('select#customerIds').change(this.customerSelectOnChange.bind(this));
         $('select#itemCodes').change(this.itemSelectOnChange.bind(this));
         $('#place-order-tbl').on('click', 'button', this.optionButtonClick.bind(this));
@@ -33,6 +33,7 @@ export class PlaceOrder {
     }
 
     async loadCustomerItems() {
+
         await this.getLastOrderId();
         this.customers = await this.customerService.getAllCustomers();
         $('#customerIds').empty();
