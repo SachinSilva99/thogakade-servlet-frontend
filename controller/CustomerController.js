@@ -119,6 +119,10 @@ export class CustomerController {
             $('#alertInfo').text('Success');
             $('#alertModal').modal('show');
             this.loadCustomersTbl();
+        }).catch(er=>{
+            $('#msg').text('Cannot delete customer in use');
+            $('#alertInfo').text('Error');
+            $('#alertModal').modal('show');
         });
     }
 

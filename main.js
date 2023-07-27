@@ -1,4 +1,6 @@
-import {customers, orders} from "./db/DB.js";
+import OrderService from "./db/OrderService.js";
+import {CustomerService} from "./db/CustomerService.js";
+
 
 hideAll();
 $('#home').show();
@@ -9,10 +11,13 @@ $('.navbar-nav .nav-link').click(function () {
     count();
 });
 count();
-function count() {
+async function count() {
+    let orders = await new OrderService().getAllItems();
     let ordersCount = orders.length;
+    console.log(ordersCount);
+
+    let customers = await new CustomerService().getAllCustomers();
     let customersCount = customers.length;
-    console.log(ordersCount, customersCount)
     $('#customersCount').text(customersCount);
     $('#ordersCount').text(ordersCount);
 }
