@@ -1,11 +1,13 @@
 import OrderService from "../db/OrderService.js";
+import {CustomerService} from "../db/CustomerService.js";
 
 export class OrderController {
 
     constructor() {
         this.orderService = new OrderService();
         this.orders = this.orderService.getAllItems();
-        console.log(this.orders);
+        this.customerService = new CustomerService();
+        this.customers = [];
         this.orderDetails = this.orderService.getAllOrderDetails();
         $('select#orderId').change(this.loadOrders.bind(this));
         $('.nav-link').click(this.loadOrdersIfAvailable.bind(this));
@@ -14,13 +16,14 @@ export class OrderController {
     async loadOrders(e) {
         this.orders = await this.orderService.getAllItems();
         this.orderDetails = await this.orderService.getAllOrderDetails();
+        const customers = await this.customerService.getAllCustomers();
         const orderId = $(e.target).children("option:selected").val();
         if (orderId) {
-            console.log(this.orderDetails);
             const ods = this.orderDetails.filter(o => o.orderId === orderId);
             const order = this.orders.find(o => o.id === orderId);
-            console.log(order.id);
-            const customer = order.customer;
+            const customerId = order.customer;
+            const customer = customers.find(customer => customer.id === customerId);
+
             $('#customer_id_o').val(customer.id);
             $('#customer_name_o').val(customer.name);
             $('#customer_address_o').val(customer.address);

@@ -10,7 +10,7 @@ export class CustomerService {
         try {
             const data = await this.api.getAll('customer');
             console.log('Data retrieved successfully:', data);
-            return data.map(customer => new Customer(customer.id, customer.name, customer.address));
+            return data.map(customer => new Customer(customer.id, customer.name, customer.address).toJSON());
         } catch (error) {
             console.error('Failed to retrieve data. Error:', error);
             return [];

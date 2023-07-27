@@ -5,7 +5,7 @@ import {CustomerService} from "../db/CustomerService.js";
 import ItemService from "../db/ItemService.js";
 import CartDetail from "../model/CartDetail.js";
 
-export class PlaceOrder {
+export class PlaceOrderController {
 
     constructor() {
         this.itemService = new ItemService();
@@ -247,10 +247,7 @@ export class PlaceOrder {
         this.orderItems = [];
         this.loadOrderTbl();
         const balance = cash - total;
-        const currentOrderId = $('#orderIdLabel').text();
-        let nextOrderId = this.generateOrderId(currentOrderId);
-        console.log(nextOrderId);
-        $('#orderIdLabel').text(nextOrderId);
+
         this.loadCustomerItems();
         this.clearFields();
         $('#msg').text(`Order Placed Successfully Customer Balance is  ${balance}`);
@@ -276,6 +273,8 @@ export class PlaceOrder {
         $('#customerIds').val('');
         $('.total').text('0');
         $('#cash').val('');
+        const currentOrderId = $('#orderIdLabel').text();
+        this.updateUi(currentOrderId);
     }
 
 
@@ -318,9 +317,14 @@ export class PlaceOrder {
         const nextNumber = currentNumber + 1;
         return 'D' + String(nextNumber).padStart(3, '0');
     }
+
+    async updateUi(currentOrderId) {
+        let nextOrderId = this.generateOrderId(currentOrderId);
+        $('#orderIdLabel').text(nextOrderId);
+    }
 }
 
-new PlaceOrder();
+new PlaceOrderController();
 
 
 //Place Order page End------------------------------------------------------------------------
